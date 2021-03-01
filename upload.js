@@ -3,12 +3,21 @@ const path = require('path');
 const crypto = require('crypto');
 const multer = require('multer');
 
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 const storagePath = path.join(__dirname, `/storage`);
 const listFileName = 'list.json';
 
-const createFileName = (fileOriginalName) => {
-    const fileOriginalNameParts = fileOriginalName.split('.');
-    const fileExtension = fileOriginalNameParts[fileOriginalNameParts.length - 1];
+const getFileExtension = (fileName) => {
+    const fileNameParts = fileName.split('.');
+    return fileNameParts[fileNameParts.length - 1];
+};
+
+const createFileName = (fileName, fileExt = '') => {
+    const fileNameParts = fileName.split('.');
+    const fileExtension = fileExt === '' ? fileNameParts[fileNameParts.length - 1] : fileExt;
 
     return crypto.randomBytes(8).toString('hex') + '.' + fileExtension;
 };
@@ -29,19 +38,28 @@ const createListFile = (listFilePath) => {
     if (!fs.existsSync(listFilePath)) {
         fs.writeFileSync(listFilePath, JSON.stringify({}));
     }
-}
+};
 
-const saveBodyToList = (listFilePath, trackId, body) => {
+const createTrackBody = (listFilePath, trackId, body) => {
     const listFileContent = JSON.parse(fs.readFileSync(listFilePath).toString('utf8'));
     listFileContent[trackId] = body;
     fs.writeFileSync(listFilePath, JSON.stringify(listFileContent));
 };
-
-const saveCoverToList = (listFilePath, trackId, fileName) => {
+const savePropertyToList = (listFilePath, trackId, key, value) => {
     const listFileContent = JSON.parse(fs.readFileSync(listFilePath).toString('utf8'));
-    listFileContent[trackId]['cover'] = fileName;
+    listFileContent[trackId][key] = value;
     fs.writeFileSync(listFilePath, JSON.stringify(listFileContent));
 }
+
+const convertToMp3File = (trackDirPath, fileName) => {
+    const convert = ffmpeg(`${trackDirPath}/${fileName}`).format('mp3');
+    const newFileName = createFileName(fileName, 'mp3');
+    const newFilePath = `${trackDirPath}/${newFileName}`;
+
+    convert.clone().save(newFilePath);
+
+    return newFileName;
+};
 
 const storageOptions = (userId, trackId) => {
     const userDirName = `u-${userId}`;
@@ -56,7 +74,7 @@ const storageOptions = (userId, trackId) => {
             createListFile(listFilePath);
             createTrackDir(trackDirPath);
             if (file.fieldname === 'audio') {
-                saveBodyToList(listFilePath, trackId, req.body);
+                createTrackBody(listFilePath, trackId, req.body);
             }
 
             // Write files to track directory
@@ -64,11 +82,17 @@ const storageOptions = (userId, trackId) => {
         },
         filename: (req, file, cb) => {
             const fileName = createFileName(file.originalname);
-            if (file.fieldname === 'photo') {
-                saveCoverToList(listFilePath, trackId, fileName);
-            }
+            const fileExtension = getFileExtension(file.originalname);
 
             cb(null, fileName);
+
+            if (file.fieldname === 'photo') {
+                savePropertyToList(listFilePath, trackId, 'cover', fileName);
+            } else if (file.fieldname === 'audio') {
+                const mp3FileName = convertToMp3File(trackDirPath, fileName);
+                savePropertyToList(listFilePath, trackId, fileExtension, fileName);
+                savePropertyToList(listFilePath, trackId, 'mp3', mp3FileName);
+            }
         }
     }
 }
