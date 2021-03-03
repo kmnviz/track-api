@@ -21,7 +21,7 @@ app.post('/test', (req, res) => {
 app.post('/upload/:user_id', (req, res) => {
     const userId = req.params['user_id'];
     const trackId = uniqueId(8);
-    const upload = require('./upload')(userId, trackId);
+    const upload = require('./src/functions/upload')(userId, trackId);
 
     upload(req, res, (err) => {});
 

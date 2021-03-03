@@ -3,11 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const multer = require('multer');
 
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const ffmpeg = require('fluent-ffmpeg');
-ffmpeg.setFfmpegPath(ffmpegPath);
-
-const storagePath = path.join(__dirname, `/storage`);
+const storagePath = path.join(__dirname, `../../storage`);
 const listFileName = 'list.json';
 
 const getFileExtension = (fileName) => {
@@ -40,25 +36,28 @@ const createListFile = (listFilePath) => {
     }
 };
 
-const createTrackBody = (listFilePath, trackId, body) => {
-    const listFileContent = JSON.parse(fs.readFileSync(listFilePath).toString('utf8'));
-    listFileContent[trackId] = body;
-    fs.writeFileSync(listFilePath, JSON.stringify(listFileContent));
-};
-const savePropertyToList = (listFilePath, trackId, key, value) => {
-    const listFileContent = JSON.parse(fs.readFileSync(listFilePath).toString('utf8'));
-    listFileContent[trackId][key] = value;
-    fs.writeFileSync(listFilePath, JSON.stringify(listFileContent));
-}
-
 const convertToMp3File = (trackDirPath, fileName) => {
-    const convert = ffmpeg(`${trackDirPath}/${fileName}`).format('mp3');
+    const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+    const ffmpeg = require('fluent-ffmpeg');
+    ffmpeg.setFfmpegPath(ffmpegPath);
+
     const newFileName = createFileName(fileName, 'mp3');
     const newFilePath = `${trackDirPath}/${newFileName}`;
 
-    convert.clone().save(newFilePath);
+    ffmpeg(`${trackDirPath}/${fileName}`).toFormat('mp3').saveToFile(newFilePath);
 
     return newFileName;
+};
+
+const fillTrackObject = (object, key, value) => {
+    object[key] = value;
+    return object;
+};
+
+const addTrackToList = (listFilePath, trackId, body) => {
+    const listFileContent = JSON.parse(fs.readFileSync(listFilePath).toString('utf8'));
+    listFileContent[trackId] = body;
+    fs.writeFileSync(listFilePath, JSON.stringify(listFileContent));
 };
 
 const storageOptions = (userId, trackId) => {
@@ -67,15 +66,16 @@ const storageOptions = (userId, trackId) => {
     const listFilePath = `${userDirPath}/${listFileName}`;
     const trackDirName = `${trackId}`;
     const trackDirPath = `${userDirPath}/${trackDirName}`;
+    const trackObject = require('../templates/track');
 
     return {
         destination: (req, file, cb) => {
             createUserDir(userDirPath);
             createListFile(listFilePath);
             createTrackDir(trackDirPath);
-            if (file.fieldname === 'audio') {
-                createTrackBody(listFilePath, trackId, req.body);
-            }
+            Object.keys(req.body).forEach((key) => {
+                fillTrackObject(trackObject, key, req.body[key]);
+            });
 
             // Write files to track directory
             cb(null, trackDirPath);
@@ -87,12 +87,15 @@ const storageOptions = (userId, trackId) => {
             cb(null, fileName);
 
             if (file.fieldname === 'photo') {
-                savePropertyToList(listFilePath, trackId, 'cover', fileName);
+                fillTrackObject(trackObject, 'cover', fileName);
             } else if (file.fieldname === 'audio') {
                 const mp3FileName = convertToMp3File(trackDirPath, fileName);
-                savePropertyToList(listFilePath, trackId, fileExtension, fileName);
-                savePropertyToList(listFilePath, trackId, 'mp3', mp3FileName);
+                fillTrackObject(trackObject, fileExtension, fileName);
+                fillTrackObject(trackObject, 'format', fileExtension);
+                fillTrackObject(trackObject, 'mp3', mp3FileName);
             }
+
+            addTrackToList(listFilePath, trackId, trackObject);
         }
     }
 }
