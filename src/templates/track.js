@@ -1,15 +1,13 @@
-module.exports = {
-    "name": "",
-    "artist_name": "",
-    "label_name": "",
-    "released_date": "",
-    "genres": "",
-    "additional_info": "",
-    "bpm": "",
-    "duration": "",
-    "format": "",
-    "cover": "",
-    "mp3": "",
-    "wav": "",
-    "flac": ""
+module.exports = () => {
+    return {
+        "name": "",
+        "artist_name": "",
+        "label_name": "",
+        "released_date": "",
+        "genres": "",
+        "additional_info": "",
+        "image": [],
+        "audio": [],
+        "meta": {}
+    }
 };
