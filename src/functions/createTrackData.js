@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const ffmpeg = require('../services/ffmpeg');
 
 const storagePath = path.join(__dirname, `../../storage`);
 const listFileName = 'list.json';
@@ -23,9 +22,9 @@ module.exports = (userId, trackId, payload) => {
         const fileExtension = fileParts[fileParts.length - 1];
 
         if (imageFormats.includes(fileExtension)) {
-            trackObject['image'].push(file);
+            trackObject['image'] = file;
         } else if (audioFormats.includes(fileExtension)) {
-            trackObject['audio'].push(file);
+            trackObject['private'] = file;
         }
     });
 

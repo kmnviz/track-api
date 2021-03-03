@@ -1,5 +1,4 @@
 const path = require('path');
-const crypto = require('crypto');
 const express = require('express');
 const app = express();
 const port = 3030;
@@ -8,10 +7,6 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
     res.json({ message: 'hello', route: '/' });
-});
-
-app.post('/test', (req, res) => {
-    res.json({ message: 'hello', route: '/test' });
 });
 
 app.post('/upload/:user_id', (req, res) => {
@@ -26,10 +21,12 @@ app.post('/upload/:user_id', (req, res) => {
         if (!err) {
             const createTrackData = require('./src/functions/createTrackData');
             createTrackData(userId, trackId, req['body']);
+            const createTrackMp3 = require('./src/functions/createTrackMp3');
+            createTrackMp3(userId, trackId);
         }
     });
 
-    res.json({ message: 'hello', route: '/upload', trackId: trackId });
+    res.json({ message: 'done', trackId: trackId });
 });
 
 app.listen(port, () => {

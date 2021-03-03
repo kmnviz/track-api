@@ -6,8 +6,8 @@ module.exports = () => {
         "released_date": "",
         "genres": "",
         "additional_info": "",
-        "image": [],
-        "audio": [],
-        "meta": {}
+        "image": "",
+        "public": "",
+        "private": ""
     }
 };
