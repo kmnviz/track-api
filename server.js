@@ -66,13 +66,14 @@ app.post('/delete/:user_id/:track_id', (req, res) => {
     res.json({ message: 'done', id: trackId });
 });
 
-app.get('/read/:user_id/:track_id', (req, res) => {
+app.get('/read/:user_id/:track_id?', (req, res) => {
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
+    const getUserData = require('./src/functions/getUserData');
     const getTrackData = require('./src/functions/getTrackData');
-    const trackData = getTrackData(userId, trackId);
+    const data = req['params']['track_id'] ? getTrackData(userId, trackId) : getUserData(userId);
 
-    res.json({ message: 'done', id: trackId, data: trackData });
+    res.json({ message: 'done', id: req['params']['track_id'] ? trackId : req['params']['user_id'], data: data });
 });
 
 app.listen(port, () => {
