@@ -26,7 +26,7 @@ app.post('/create/:user_id', (req, res) => {
 
             res.json({ message: 'done', id: trackId });
         } else {
-            res.status(401).json({ message: 'bad request' });
+            res.status(400).json({ message: 'bad request' });
         }
     });
 });
@@ -49,7 +49,7 @@ app.post('/update/:user_id/:track_id', (req, res) => {
 
             res.json({ message: 'done', id: trackId });
         } else {
-            res.status(401).json({ message: 'bad request' });
+            res.status(400).json({ message: 'bad request' });
         }
     });
 });
@@ -74,6 +74,19 @@ app.get('/read/:user_id/:track_id?', (req, res) => {
     const data = req['params']['track_id'] ? getTrackData(userId, trackId) : getUserData(userId);
 
     res.json({ message: 'done', id: req['params']['track_id'] ? trackId : req['params']['user_id'], data: data });
+});
+
+app.get('/download/:user_id/:track_id', (req, res) => {
+    const userId = `u-${req['params']['user_id']}`;
+    const trackId = `${req['params']['track_id']}`;
+    const getTrackFilePath = require('./src/functions/getTrackFilePath');
+
+    try {
+        const trackFilePath = getTrackFilePath(userId, trackId);
+        res.download(trackFilePath);
+    } catch (error) {
+        res.status(400).json({ message: 'bad request' });
+    }
 });
 
 app.listen(port, () => {
