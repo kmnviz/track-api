@@ -54,6 +54,18 @@ app.post('/update/:user_id/:track_id', (req, res) => {
     });
 });
 
+app.post('/delete/:user_id/:track_id', (req, res) => {
+    const userId = `u-${req['params']['user_id']}`;
+    const trackId = `${req['params']['track_id']}`;
+    const deleteTrackDir = require('./src/functions/deleteTrackDir');
+    const deleteTrackData = require('./src/functions/deleteTrackData');
+
+    deleteTrackDir(userId, trackId);
+    deleteTrackData(userId, trackId);
+
+    res.json({ message: 'done', trackId: trackId });
+});
+
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
 });
