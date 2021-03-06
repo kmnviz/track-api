@@ -24,7 +24,7 @@ app.post('/create/:user_id', (req, res) => {
             const createTrackMp3 = require('./src/functions/createTrackMp3');
             createTrackMp3(userId, trackId);
 
-            res.json({ message: 'done', trackId: trackId });
+            res.json({ message: 'done', id: trackId });
         } else {
             res.status(401).json({ message: 'bad request' });
         }
@@ -47,7 +47,7 @@ app.post('/update/:user_id/:track_id', (req, res) => {
 
             updateTrackData(userId, trackId, updatedData);
 
-            res.json({ message: 'done', trackId: trackId });
+            res.json({ message: 'done', id: trackId });
         } else {
             res.status(401).json({ message: 'bad request' });
         }
@@ -63,7 +63,16 @@ app.post('/delete/:user_id/:track_id', (req, res) => {
     deleteTrackDir(userId, trackId);
     deleteTrackData(userId, trackId);
 
-    res.json({ message: 'done', trackId: trackId });
+    res.json({ message: 'done', id: trackId });
+});
+
+app.get('/read/:user_id/:track_id', (req, res) => {
+    const userId = `u-${req['params']['user_id']}`;
+    const trackId = `${req['params']['track_id']}`;
+    const getTrackData = require('./src/functions/getTrackData');
+    const trackData = getTrackData(userId, trackId);
+
+    res.json({ message: 'done', id: trackId, data: trackData });
 });
 
 app.listen(port, () => {
