@@ -84,9 +84,34 @@ app.get('/download/:user_id/:track_id', (req, res) => {
     const getTrackFilePath = require('./src/functions/getTrackFilePath');
 
     try {
-        const trackFilePath = getTrackFilePath(userId, trackId);
+        const trackFilePath = getTrackFilePath(userId, trackId, 'private');
         res.download(trackFilePath);
     } catch (error) {
+        res.status(400).json({ message: 'bad request' });
+    }
+});
+
+app.get('/content/:user_id/:track_id', (req, res) => {
+    const fs = require('fs');
+    const userId = `u-${req['params']['user_id']}`;
+    const trackId = `${req['params']['track_id']}`;
+    const getTrackFilePath = require('./src/functions/getTrackFilePath');
+    const getTrackData = require('./src/functions/getTrackData');
+    const trackData = getTrackData(userId, trackId);
+
+    try {
+        const trackFilePath = getTrackFilePath(userId, trackId);
+        res.writeHead(206, {
+            'Accept-Ranges': `0-${trackData['meta']['size']}`,
+            'Content-Type': 'audio/mpeg',
+            'Content-Length': trackData['meta']['size'],
+            'Content-Disposition': `attachment; filename=${trackData['public']}`
+        });
+
+        const readableStream = fs.createReadStream(trackFilePath);
+        readableStream.pipe(res);
+    } catch (error) {
+        console.log(error);
         res.status(400).json({ message: 'bad request' });
     }
 });
