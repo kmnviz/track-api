@@ -10,9 +10,9 @@ app.get('/', (req, res) => {
 });
 
 app.post('/create/:user_id', (req, res) => {
-    const uniqueId = require('./src/functions/uniqueId');
+    const getUniqueId = require('./src/functions/getUniqueId');
     const userId = `u-${req['params']['user_id']}`;
-    const trackId = uniqueId('t-', 8);
+    const trackId = getUniqueId('t-', 8);
     const createTrackDir = require('./src/functions/createTrackDir');
     const trackDirPath = createTrackDir(userId, trackId);
     const storageCreate = require('./src/services/storage').create(trackDirPath);
@@ -23,6 +23,8 @@ app.post('/create/:user_id', (req, res) => {
             createTrackData(userId, trackId, req['body']);
             const createTrackMp3 = require('./src/functions/createTrackMp3');
             createTrackMp3(userId, trackId);
+            const createTrackMeta = require('./src/functions/createTrackMeta');
+            createTrackMeta(userId, trackId, req.files.audio);
 
             res.json({ message: 'done', id: trackId });
         } else {

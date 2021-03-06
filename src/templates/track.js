@@ -8,6 +8,10 @@ module.exports = () => {
         "additional_info": "",
         "image": "",
         "public": "",
-        "private": ""
+        "private": "",
+        "meta": {
+            "duration": "",
+            "size": ""
+        }
     }
 };

@@ -1,10 +1,10 @@
-const uniqueId = require('./uniqueId');
+const getUniqueId = require('./getUniqueId');
 
 const createFileName = (fileName, fileExt = '') => {
     const fileNameParts = fileName.split('.');
     const fileExtension = fileExt === '' ? fileNameParts[fileNameParts.length - 1] : fileExt;
 
-    return uniqueId('', 8) + '.' + fileExtension;
+    return getUniqueId('', 8) + '.' + fileExtension;
 };
 
 module.exports = createFileName;

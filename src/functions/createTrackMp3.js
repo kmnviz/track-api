@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const ffmpeg = require('../services/ffmpeg');
-const uniqueId = require('./uniqueId');
+const getUniqueId = require('./getUniqueId');
 
 const storagePath = path.join(__dirname, `../../storage`);
 const listFileName = 'list.json';
@@ -13,7 +13,7 @@ module.exports = (userId, trackId) => {
     const audioFilePath = `${storagePath}/${userId}/${trackId}/${listFileContent[trackId]['private']}`;
 
     const convert = ffmpeg(audioFilePath).format('mp3');
-    const newFileName = `${uniqueId('', 8)}.mp3`;
+    const newFileName = `${getUniqueId('', 8)}.mp3`;
     const newFilePath = `${trackDirPath}/${newFileName}`;
 
     listFileContent[trackId]['public'] = newFileName;
