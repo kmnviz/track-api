@@ -1,3 +1,4 @@
+const path = require('path');
 const multer = require('multer');
 const createFileName = require('../functions/createFileName');
 
@@ -13,9 +14,19 @@ const options = (dirPath) => {
     }
 };
 
-const send = (options, fields) => {
+const send = (options, fields, allowedExtensions) => {
+    const fileFilter = (req, file, cb) => {
+        const fileExtension = file.originalname.split('.')[file.originalname.split('.').length - 1];
+
+        if (!allowedExtensions.includes(fileExtension)) {
+            return cb(new Error('Not allowed file format'));
+        }
+
+        cb(null, true);
+    };
+
     const diskStorage = multer.diskStorage(options);
-    return multer({ storage: diskStorage }).fields(fields);
+    return multer({ storage: diskStorage, fileFilter }).fields(fields);
 }
 
 module.exports = {
@@ -25,7 +36,7 @@ module.exports = {
             { name: 'image', maxCount: 1 }
         ];
 
-        return send(options(dirPath), fields);
+        return send(options(dirPath), fields, ['jpeg', 'jpg', 'png', 'wav', 'flac']);
     },
 
     update: (dirPath) => {
@@ -33,6 +44,6 @@ module.exports = {
             { name: 'image', maxCount: 1 }
         ];
 
-        return send(options(dirPath), fields);
+        return send(options(dirPath), fields, ['jpeg', 'jpg', 'png']);
     }
 }
