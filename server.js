@@ -22,11 +22,16 @@ app.post('/create/:user_id', (req, res) => {
             const createTrackData = require('./src/functions/createTrackData');
             createTrackData(userId, trackId, req['body']);
             const createTrackMp3 = require('./src/functions/createTrackMp3');
-            createTrackMp3(userId, trackId);
-            const createTrackMeta = require('./src/functions/createTrackMeta');
-            createTrackMeta(userId, trackId, req.files.audio);
+            createTrackMp3(userId, trackId)
+                .then(() => {
+                    const createTrackMeta = require('./src/functions/createTrackMeta');
+                    createTrackMeta(userId, trackId);
 
-            res.json({ message: 'done', id: trackId });
+                    res.json({ message: 'done', id: trackId });
+                })
+                .catch(() => {
+                    res.status(400).json({ message: 'something went wrong' });
+                });
         } else {
             res.status(400).json({ message: 'bad request' });
         }

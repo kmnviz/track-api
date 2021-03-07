@@ -6,7 +6,7 @@ const getUniqueId = require('./getUniqueId');
 const storagePath = path.join(__dirname, `../../storage`);
 const listFileName = 'list.json';
 
-module.exports = (userId, trackId) => {
+const createTrackMp3 = (userId, trackId) => {
     const listFilePath = `${storagePath}/${userId}/${listFileName}`;
     const trackDirPath = `${storagePath}/${userId}/${trackId}`;
     const listFileContent = JSON.parse(fs.readFileSync(listFilePath).toString('utf8'));
@@ -19,5 +19,15 @@ module.exports = (userId, trackId) => {
     listFileContent[trackId]['public'] = newFileName;
     fs.writeFileSync(listFilePath, JSON.stringify(listFileContent));
 
-    convert.clone().save(newFilePath);
-}
+    return new Promise((resolve, reject) => {
+        convert.clone().save(newFilePath)
+            .on('end', () => {
+                resolve();
+            })
+            .on('error', (err) => {
+                reject(err);
+            });
+    });
+};
+
+module.exports = createTrackMp3;

@@ -2,26 +2,25 @@ const fs = require('fs');
 const path = require('path');
 const { getAudioDurationInSeconds } = require('get-audio-duration');
 
+const getFileSize = require('./getFileSize');
 const storagePath = path.join(__dirname, `../../storage`);
 const listFileName = 'list.json';
 
-const createTrackMeta = (userId, trackId, audio) => {
-    const fileName = audio[0].filename;
-    const fileSize = audio[0].size;
+const createTrackMeta = (userId, trackId) => {
     const userDirPath = `${storagePath}/${userId}`;
     const listFilePath = `${userDirPath}/${listFileName}`;
-    const trackFilePath = `${userDirPath}/${trackId}/${fileName}`;
     const listFileContent = JSON.parse(fs.readFileSync(listFilePath).toString('utf8'));
     const trackObject = listFileContent[trackId];
-
-    const meta = {
-        size: fileSize
-    };
+    const trackFilePath = `${userDirPath}/${trackId}/${trackObject['public']}`;
+    const trackFileSize = getFileSize(trackFilePath);
 
     getAudioDurationInSeconds(trackFilePath)
         .then((duration) => {
-            meta['duration'] = duration;
-            trackObject['meta'] = meta;
+            trackObject['meta'] = {
+                size: trackFileSize,
+                duration: duration
+            };
+
             listFileContent[trackId] = trackObject;
             fs.writeFileSync(listFilePath, JSON.stringify(listFileContent));
         });
