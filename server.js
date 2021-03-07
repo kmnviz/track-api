@@ -105,19 +105,46 @@ app.get('/content/:user_id/:track_id', (req, res) => {
     const trackData = getTrackData(userId, trackId);
 
     try {
-        const trackFilePath = getTrackFilePath(userId, trackId);
-        res.writeHead(206, {
-            'Accept-Ranges': `0-${trackData['meta']['size']}`,
+        const trackFilePath = getTrackFilePath(userId, trackId, 'public');
+        const headers = {
             'Content-Type': 'audio/mpeg',
-            'Content-Length': trackData['meta']['size'],
-            'Content-Disposition': `attachment; filename=${trackData['public']}`
-        });
+            'Content-Length': `${trackData['meta']['size']}`,
+            'Content-Range': `bytes 0-${trackData['meta']['size']}/${trackData['meta']['size']}`,
+            'Content-Disposition': `attachment; filename=${trackData['public']}`,
+        };
+
+        res.writeHead(206, headers);
 
         const readableStream = fs.createReadStream(trackFilePath);
         readableStream.pipe(res);
     } catch (error) {
         res.status(400).json({ message: 'bad request' });
     }
+});
+
+app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
+    const fs = require('fs');
+    const userId = `u-${req['params']['user_id']}`;
+    const trackId = `${req['params']['track_id']}`;
+    const getTrackFilePath = require('./src/functions/getTrackFilePath');
+    const trackFilePath = getTrackFilePath(userId, trackId, 'public');
+    const getTrackData = require('./src/functions/getTrackData');
+    const trackData = getTrackData(userId, trackId);
+    const contentLength = 100000;
+    const bytesFrom = 0;
+    const bytesTo = (bytesFrom + contentLength) - 1;
+    const headers = {
+        'Accept-Ranges': 'bytes',
+        'Content-Range': `bytes ${bytesFrom}-${bytesTo}/${trackData['meta']['size']}`,
+        'Content-Length': `${contentLength}`,
+        'Content-Type': 'audio/mpeg',
+        'Cache-Control': 'no-cache'
+    };
+
+    res.writeHead(206, headers);
+
+    const readableStream = fs.createReadStream(trackFilePath);
+    readableStream.pipe(res);
 });
 
 app.listen(port, () => {
