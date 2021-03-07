@@ -111,7 +111,6 @@ app.get('/content/:user_id/:track_id', (req, res) => {
         const readableStream = fs.createReadStream(trackFilePath);
         readableStream.pipe(res);
     } catch (error) {
-        console.log(error);
         res.status(400).json({ message: 'bad request' });
     }
 });
