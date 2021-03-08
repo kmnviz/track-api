@@ -1,25 +1,30 @@
-const build = (seconds, bps, remain) => {
+const build = (duration, size, bps, chunkDuration) => {
     const ranges = {};
+    const count = Math.ceil(duration / chunkDuration);
+    const length = bps * chunkDuration;
 
-    for (let i = 0; i < seconds; i++) {
-        const start = i === 0 ? 0 : (i * bps);
-        const end = (bps * (i + 1)) - 1;
+    for (let i = 0; i < count; i++) {
+        const first = i === 0;
+        const last = i === count - 1;
 
-        ranges[i + 1] = `${start}/${end}`;
+        let startSecs, endSecs, startBytes, endBytes;
+
+        startSecs = first ? i + 1 : (i * chunkDuration) + 1;
+        endSecs = last ? duration : (startSecs + chunkDuration) - 1;
+
+        startBytes = first ? 0 : (length * i);
+        endBytes = !last ? (startBytes + length) - 1 : (size - 1);
+
+        ranges[`${startSecs}-${endSecs}`] = `${startBytes}/${endBytes}`;
     }
-
-    const lastRange = ranges[seconds].split('/');
-    ranges[seconds + 1] = (parseInt(lastRange[1]) + 1) + '/' + (parseInt(lastRange[1]) + parseInt(remain));
 
     return ranges;
 }
 
 const chunks = (size, duration) => {
-    const seconds = Math.floor(duration);
-    const remain = size % seconds;
-    const bps = Math.floor(size / seconds);
+    const bps = Math.floor(size / duration);
 
-    return build(seconds, bps, remain);
+    return build(duration, size, bps, 5);
 };
 
 module.exports = chunks;

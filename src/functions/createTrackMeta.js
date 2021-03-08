@@ -18,7 +18,7 @@ const createTrackMeta = (userId, trackId) => {
         .then((duration) => {
             trackObject['meta'] = {
                 size: trackFileSize,
-                duration: (Math.floor(duration * 100)) / 100
+                duration: Math.floor(duration)
             };
 
             listFileContent[trackId] = trackObject;
