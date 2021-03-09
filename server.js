@@ -125,10 +125,11 @@ app.get('/content/:user_id/:track_id', (req, res) => {
 app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
+    const second = `${req['params']['second']}`;
     const trackMeta = require('./src/functions/getTrackData')(userId, trackId)['meta'];
-    const chunks = require('./src/services/chunks')(trackMeta['size'], trackMeta['duration']);
+    const chunk = require('./src/services/chunk')(second, trackMeta);
 
-    res.status(200).json({ message: 'done', chunks: chunks });
+    res.status(200).json({ message: 'done', chunk: chunk, meta: trackMeta });
 });
 
 app.listen(port, () => {
