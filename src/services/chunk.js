@@ -1,17 +1,12 @@
-// seconds: duration
-// bytes: size
+const getBytesPerSecond = require('../functions/getBytesPerSecond');
 
 RANGE_DURATION = 10;
 
-// bytes per second
-const bps = (size, duration) => {
-    return size / duration;
-};
-
 const createChunksRanges = (duration, size) => {
     const chunks = [];
+    const bps = getBytesPerSecond(size, duration);
     const count = Math.ceil(duration / RANGE_DURATION);
-    const length = Math.floor(bps(size, duration) * RANGE_DURATION);
+    const length = Math.floor(bps * RANGE_DURATION);
 
     for (let i = 0; i < count; i++) {
         const first = i === 0;

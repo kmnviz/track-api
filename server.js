@@ -132,7 +132,7 @@ app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
     const trackFilePath = require('./src/functions/getTrackFilePath')(userId, trackId, 'public');
     const trackData = require('./src/functions/getTrackData')(userId, trackId);
     const chunk = require('./src/services/chunk')(second, trackData['meta']);
-    
+
     if (Object.keys(chunk['ranges']).length > 0) {
         const bytesStart = parseInt(chunk['ranges']['bytes'].split('/')[0]);
         const bytesEnd = parseInt(chunk['ranges']['bytes'].split('/')[1]);
@@ -144,9 +144,9 @@ app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
 
         res.writeHead(200, headers).write(content);
         res.end();
+    } else {
+        res.status(404).json({ message: 'not found', route: '/chunk' });
     }
-
-    res.status(404).json({ message: 'not found', route: '/chunk' });
 });
 
 app.listen(port, () => {

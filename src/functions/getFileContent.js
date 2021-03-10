@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 const getFileContent = (filePath, bytesStart, bytesEnd) => {
-    const length = bytesEnd - bytesStart;
+    const length = (bytesEnd - bytesStart) + 1;
     const fd = fs.openSync(filePath, 'r');
     const buffer = Buffer.alloc(length);
 
