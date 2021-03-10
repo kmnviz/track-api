@@ -2,17 +2,37 @@
 <html>
 <head>
     <title>This is the title of the webpage!</title>
+    <audio controls id="audio"></audio>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
 </head>
 <body>
     <p>This is an example paragraph. Anything in the <strong>body</strong> tag will appear on the page, just like this <strong>p</strong> tag and its contents.</p>
     <button onclick="fetchContent()">fetch</button>
+    <button onclick="play()">play</button>
 </body>
 <script>
+const audio = document.getElementById('audio');
+const mimeCodec = 'audio/mpeg';
+const mediaSource = new MediaSource;
+audio.src = URL.createObjectURL(mediaSource);
+
 const fetchContent = () => {
-    fetch('http://localhost:3030/chunk/1/t-e0346c18c2632d27/28')
+    const url = 'http://localhost:3030/chunk/1/t-e0346c18c2632d27/1';
+    // const url = 'http://localhost:3030/content/1/t-e9f2dba2f5e709dc';
+
+    axios.get(url, { responseType: 'arraybuffer' })
         .then((res) => {
-            console.log(res);
+            const sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+            sourceBuffer.appendBuffer(res['data']);
+            audio.play();
+            // audioContext.decodeAudioData(res['body']).then((data) => {
+            //    sourceBuffer.appendBuffer(data);
+            // });
         });
-}
+};
+
+const play = () => {
+    audio.play();
+};
 </script>
 </html>
