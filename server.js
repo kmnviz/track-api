@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const app = express();
@@ -7,6 +8,10 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
     res.json({ message: 'hello', route: '/' });
+});
+
+app.get('/index', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.post('/create/:user_id', (req, res) => {
@@ -97,7 +102,6 @@ app.get('/download/:user_id/:track_id', (req, res) => {
 });
 
 app.get('/content/:user_id/:track_id', (req, res) => {
-    const fs = require('fs');
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
     const getTrackFilePath = require('./src/functions/getTrackFilePath');
@@ -113,8 +117,7 @@ app.get('/content/:user_id/:track_id', (req, res) => {
             'Content-Disposition': `attachment; filename=${trackData['public']}`,
         };
 
-        res.writeHead(206, headers);
-
+        res.writeHead(200, headers);
         const readableStream = fs.createReadStream(trackFilePath);
         readableStream.pipe(res);
     } catch (error) {
@@ -126,10 +129,24 @@ app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
     const second = `${req['params']['second']}`;
-    const trackMeta = require('./src/functions/getTrackData')(userId, trackId)['meta'];
-    const chunk = require('./src/services/chunk')(second, trackMeta);
+    const trackFilePath = require('./src/functions/getTrackFilePath')(userId, trackId, 'public');
+    const trackData = require('./src/functions/getTrackData')(userId, trackId);
+    const chunk = require('./src/services/chunk')(second, trackData['meta']);
+    
+    if (Object.keys(chunk['ranges']).length > 0) {
+        const bytesStart = parseInt(chunk['ranges']['bytes'].split('/')[0]);
+        const bytesEnd = parseInt(chunk['ranges']['bytes'].split('/')[1]);
+        const content = require('./src/functions/getFileContent')(trackFilePath, bytesStart, bytesEnd);
+        const headers = {
+            'Content-Type': 'audio/mpeg',
+            'Content-Length': `${bytesEnd - bytesStart}`
+        };
 
-    res.status(200).json({ message: 'done', chunk: chunk, meta: trackMeta });
+        res.writeHead(200, headers).write(content);
+        res.end();
+    }
+
+    res.status(404).json({ message: 'not found', route: '/chunk' });
 });
 
 app.listen(port, () => {

@@ -8,7 +8,7 @@ const bps = (size, duration) => {
     return size / duration;
 };
 
-const createChunks = (duration, size) => {
+const createChunksRanges = (duration, size) => {
     const chunks = [];
     const count = Math.ceil(duration / RANGE_DURATION);
     const length = Math.floor(bps(size, duration) * RANGE_DURATION);
@@ -26,17 +26,17 @@ const createChunks = (duration, size) => {
         endBytes = !last ? (startBytes + length) - 1 : (size - 1);
 
         chunks.push({
-            range: `${startSecs}-${endSecs}`,
-            length: `${startBytes}/${endBytes}`
+            seconds: `${startSecs}-${endSecs}`,
+            bytes: `${startBytes}/${endBytes}`
         });
     }
 
     return chunks;
 };
 
-const extractChunk = (second, chunks) => {
+const extractChunkRanges = (second, chunks) => {
     for (let i = 0; i < chunks.length; i++) {
-        const rangeArr = chunks[i]['range'].split('-');
+        const rangeArr = chunks[i]['seconds'].split('-');
         if (second >= parseInt(rangeArr[0]) && second <= parseInt(rangeArr[1])) {
             return chunks[i];
         }
@@ -45,8 +45,11 @@ const extractChunk = (second, chunks) => {
 };
 
 const chunk = (second, fileMeta) => {
-    const chunks = createChunks(fileMeta['duration'], fileMeta['size']);
-    return extractChunk(second, chunks);
+    const chunk = {};
+    const chunksMeta = createChunksRanges(fileMeta['duration'], fileMeta['size']);
+    chunk['ranges'] = extractChunkRanges(second, chunksMeta);
+
+    return chunk;
 };
 
 module.exports = chunk;
