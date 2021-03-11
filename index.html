@@ -11,24 +11,69 @@
     <button onclick="play()">play</button>
 </body>
 <script>
+const chunks = [];
 const audio = document.getElementById('audio');
 const mimeCodec = 'audio/mpeg';
 const mediaSource = new MediaSource;
-audio.src = URL.createObjectURL(mediaSource);
+
+let sourceBuffer;
+mediaSource.onsourceopen = () => {
+    mediaSource.duration = 59;
+    sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+    sourceBuffer.onupdateend = () => {};
+    sourceBuffer.appendBuffer(chunks[0]);
+    audio.play();
+};
 
 const fetchContent = () => {
-    const url = 'http://localhost:3030/chunk/1/t-e0346c18c2632d27/1';
+    const url = 'http://localhost:3030/chunk/1/t-e0346c18c2632d27';
     // const url = 'http://localhost:3030/content/1/t-e9f2dba2f5e709dc';
 
-    axios.get(url, { responseType: 'arraybuffer' })
+    axios.get(`${url}/1`, { responseType: 'arraybuffer' })
         .then((res) => {
-            const sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
-            sourceBuffer.appendBuffer(res['data']);
-            audio.play();
-            // audioContext.decodeAudioData(res['body']).then((data) => {
-            //    sourceBuffer.appendBuffer(data);
-            // });
+            chunks.push(res['data']);
+            audio.src = URL.createObjectURL(mediaSource);
         });
+
+    setTimeout(() => {
+        axios.get(`${url}/11`, { responseType: 'arraybuffer' })
+            .then((res) => {
+                chunks.push(res['data']);
+                sourceBuffer.appendBuffer(chunks[1]);
+            });
+    }, 2000);
+
+    setTimeout(() => {
+        axios.get(`${url}/21`, { responseType: 'arraybuffer' })
+            .then((res) => {
+                chunks.push(res['data']);
+                sourceBuffer.appendBuffer(chunks[2]);
+            });
+    }, 4000);
+
+    setTimeout(() => {
+        axios.get(`${url}/31`, { responseType: 'arraybuffer' })
+            .then((res) => {
+                chunks.push(res['data']);
+                sourceBuffer.appendBuffer(chunks[3]);
+            });
+    }, 6000);
+
+    setTimeout(() => {
+        axios.get(`${url}/41`, { responseType: 'arraybuffer' })
+            .then((res) => {
+                chunks.push(res['data']);
+                sourceBuffer.appendBuffer(chunks[4]);
+            });
+    }, 8000);
+
+    setTimeout(() => {
+        axios.get(`${url}/51`, { responseType: 'arraybuffer' })
+            .then((res) => {
+                chunks.push(res['data']);
+                sourceBuffer.appendBuffer(chunks[5]);
+            });
+    }, 10000);
 };
 
 const play = () => {
