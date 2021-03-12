@@ -36,20 +36,20 @@ const fetchContent = () => {
         });
 
     setTimeout(() => {
-        axios.get(`${url}/5`, { responseType: 'arraybuffer' })
+        axios.get(`${url}/10`, { responseType: 'arraybuffer' })
             .then((res) => {
                 chunks.push(res['data']);
                 sourceBuffer.appendBuffer(chunks[1]);
             });
-    }, 1000);
+    }, 2000);
 
     setTimeout(() => {
-        axios.get(`${url}/10`, { responseType: 'arraybuffer' })
+        axios.get(`${url}/20`, { responseType: 'arraybuffer' })
             .then((res) => {
                 chunks.push(res['data']);
                 sourceBuffer.appendBuffer(chunks[2]);
             });
-    }, 2000);
+    }, 4000);
 };
 
 const play = () => {
