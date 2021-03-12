@@ -14,11 +14,16 @@ const createChunksRanges = (duration, size) => {
 
         let startSecs, endSecs, startBytes, endBytes;
 
-        startSecs = first ? i + 1 : (i * RANGE_DURATION) + 1;
+        startSecs = first ? 0 : (i * RANGE_DURATION);
         endSecs = last ? duration : (startSecs + RANGE_DURATION) - 1;
 
-        startBytes = first ? 0 : (length * i);
-        endBytes = !last ? (startBytes + length) - 1 : (size - 1);
+        if (first) {
+            startBytes = 0;
+            endBytes = (startBytes + length) - 1;
+        } else {
+            startBytes = (length * i) - 1;
+            endBytes = !last ? (startBytes + length) : (size - 1);
+        }
 
         chunks.push({
             seconds: `${startSecs}-${endSecs}`,
