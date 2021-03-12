@@ -84,6 +84,9 @@ app.get('/read/:user_id/:track_id?', (req, res) => {
     const getUserData = require('./src/functions/getUserData');
     const getTrackData = require('./src/functions/getTrackData');
     const data = req['params']['track_id'] ? getTrackData(userId, trackId) : getUserData(userId);
+    if (req['params']['track_id']) {
+        data['meta']['chunks'] = require('./src/functions/getChunkRanges')(data['meta']['duration'], data['meta']['size']).length;
+    }
 
     res.json({ message: 'done', id: req['params']['track_id'] ? trackId : req['params']['user_id'], data: data });
 });
@@ -131,7 +134,7 @@ app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
     const second = `${req['params']['second']}`;
     const trackFilePath = require('./src/functions/getTrackFilePath')(userId, trackId, 'public');
     const trackData = require('./src/functions/getTrackData')(userId, trackId);
-    const chunk = require('./src/services/chunk')(second, trackData['meta']);
+    const chunk = require('./src/functions/getChunk')(second, trackData['meta']);
 
     if (Object.keys(chunk['ranges']).length > 0) {
         const bytesStart = parseInt(chunk['ranges']['bytes'].split('/')[0]);

@@ -7,53 +7,47 @@
 </head>
 <body>
     <p>This is an example paragraph. Anything in the <strong>body</strong> tag will appear on the page, just like this <strong>p</strong> tag and its contents.</p>
-    <button onclick="fetchContent()">fetch</button>
-    <button onclick="play()">play</button>
+    <button onclick="fetchNext(0)">fetch</button>
+    <button onclick="audio.play()">play</button>
 </body>
 <script>
-const chunks = [];
-const audio = document.getElementById('audio');
+// chunks
+const chunkCounts = 6;
+
+// media source
 const mimeCodec = 'audio/mpeg';
 const mediaSource = new MediaSource;
 
+// audio
+const audio = document.getElementById('audio');
+audio.src = URL.createObjectURL(mediaSource);
+
+// on media source open
 let sourceBuffer;
 mediaSource.onsourceopen = () => {
     mediaSource.duration = 59;
     sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
-    sourceBuffer.onupdateend = () => {};
-    sourceBuffer.appendBuffer(chunks[0]);
-    audio.play();
 };
 
-const fetchContent = () => {
-    const url = 'http://localhost:3030/chunk/1/t-e0346c18c2632d27';
-    // const url = 'http://localhost:3030/content/1/t-e9f2dba2f5e709dc';
-
-    axios.get(`${url}/0`, { responseType: 'arraybuffer' })
-        .then((res) => {
-            chunks.push(res['data']);
-            audio.src = URL.createObjectURL(mediaSource);
-        });
-
-    setTimeout(() => {
-        axios.get(`${url}/10`, { responseType: 'arraybuffer' })
+// fetch
+const url = 'http://localhost:3030/chunk/1/t-e0346c18c2632d27';
+const fetch = (number) => {
+    console.log(number);
+    return new Promise((resolve) => {
+        axios.get(`${url}/${number * 10}`, { responseType: 'arraybuffer' })
             .then((res) => {
-                chunks.push(res['data']);
-                sourceBuffer.appendBuffer(chunks[1]);
+                sourceBuffer.appendBuffer(res['data']);
+                resolve(number);
             });
-    }, 2000);
-
-    setTimeout(() => {
-        axios.get(`${url}/20`, { responseType: 'arraybuffer' })
-            .then((res) => {
-                chunks.push(res['data']);
-                sourceBuffer.appendBuffer(chunks[2]);
-            });
-    }, 4000);
+    });
 };
-
-const play = () => {
-    audio.play();
+const fetchNext = (number) => {
+    fetch(number).then(() => {
+        number++;
+        if (number < chunkCounts) {
+            fetchNext(number);
+        }
+    });
 };
 </script>
 </html>
