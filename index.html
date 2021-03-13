@@ -2,51 +2,65 @@
 <html>
 <head>
     <title>This is the title of the webpage!</title>
-    <audio controls id="audio"></audio>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
 </head>
 <body>
-    <p>This is an example paragraph. Anything in the <strong>body</strong> tag will appear on the page, just like this <strong>p</strong> tag and its contents.</p>
-    <button onclick="fetchNext(0)">fetch</button>
-    <button onclick="audio.play()">play</button>
+    <div style="margin-bottom: 16px;">
+        <audio id="audio" controls></audio>
+    </div>
+    <button id="fetch-tracks" onclick="fetchTracks()">fetch tracks</button>
+    <ul id="list"></ul>
 </body>
 <script>
-// chunks
-const chunkCounts = 6;
-
-// media source
-const mimeCodec = 'audio/mpeg';
-const mediaSource = new MediaSource;
-
-// audio
-const audio = document.getElementById('audio');
-audio.src = URL.createObjectURL(mediaSource);
-
-// on media source open
-let sourceBuffer;
-mediaSource.onsourceopen = () => {
-    mediaSource.duration = 59;
-    sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
-};
-
 // fetch
-const url = 'http://localhost:3030/chunk/1/t-e0346c18c2632d27';
-const fetch = (number) => {
-    console.log(number);
+const fetchTracks = () => {
+    const url = 'http://localhost:3030/read/1';
+    const listEl = document.getElementById('list');
+
+    axios.get(url).then((res) => {
+        Object.keys(res['data']['data']).forEach((key) => {
+            const el = document.createElement('li');
+            const duration = res['data']['data'][key]['meta']['duration'];
+            el.innerHTML = `<button style="margin-bottom: 8px;" onclick="play('${key}', '${duration}')">${key}</button>`;
+            listEl.appendChild(el);
+        });
+        document.getElementById('fetch-tracks').remove();
+    });
+};
+const fetchChunk = (number, id, sourceBuffer) => {
     return new Promise((resolve) => {
-        axios.get(`${url}/${number * 10}`, { responseType: 'arraybuffer' })
+        axios.get(`${url}/${id}/${number * 10}`, { responseType: 'arraybuffer' })
             .then((res) => {
                 sourceBuffer.appendBuffer(res['data']);
                 resolve(number);
             });
     });
 };
-const fetchNext = (number) => {
-    fetch(number).then(() => {
+const fetchNext = (number, id, chunkCounts, sourceBuffer) => {
+    fetchChunk(number, id, sourceBuffer).then(() => {
         number++;
         if (number < chunkCounts) {
-            fetchNext(number);
+            fetchNext(number, id, chunkCounts, sourceBuffer);
         }
+    });
+};
+
+const url = 'http://localhost:3030/chunk/1';
+const chunkDuration = 10;
+const mimeCodec = 'audio/mpeg';
+let duration = 0;
+
+const play = (id, duration) => {
+    const audioElement = document.getElementById('audio');
+    const mediaSource = new MediaSource;
+
+    audioElement.src = URL.createObjectURL(mediaSource);
+    mediaSource.addEventListener('sourceopen', () => {
+        mediaSource.duration = duration;
+        const sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+        const chunkCounts = Math.floor(duration / chunkDuration) + 1;
+        fetchNext(0, id, chunkCounts, sourceBuffer);
+        audioElement.play();
     });
 };
 </script>

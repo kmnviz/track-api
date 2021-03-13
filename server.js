@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const port = 3030;
+
+app.use(cors());
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
