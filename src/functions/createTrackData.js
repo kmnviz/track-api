@@ -1,16 +1,15 @@
 const fs = require('fs');
-const path = require('path');
 
-const storagePath = path.join(__dirname, `../../storage`);
+const storagePath = require('@config').storagePath;
 const listFileName = 'list.json';
 const imageFormats = ['jpg', 'jpeg', 'png'];
 const audioFormats = ['wav', 'flac'];
 
-module.exports = (userId, trackId, payload) => {
+const createTrackData = (userId, trackId, payload) => {
     const userDirPath = `${storagePath}/${userId}`;
     const trackDirPath = `${userDirPath}/${trackId}`;
     const listFilePath = `${userDirPath}/${listFileName}`;
-    const trackObject = require('../templates/track')();
+    const trackObject = require('@templates/track')();
 
     Object.keys(payload).forEach((key) => {
         trackObject[key] = payload[key];
@@ -32,3 +31,5 @@ module.exports = (userId, trackId, payload) => {
     listFileContent[trackId] = trackObject;
     fs.writeFileSync(listFilePath, JSON.stringify(listFileContent));
 };
+
+module.exports = createTrackData;

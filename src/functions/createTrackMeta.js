@@ -1,9 +1,8 @@
 const fs = require('fs');
-const path = require('path');
 const { getAudioDurationInSeconds } = require('get-audio-duration');
 
-const getFileSize = require('./getFileSize');
-const storagePath = path.join(__dirname, `../../storage`);
+const getFileSize = require('@functions/getFileSize');
+const storagePath = require('@config').storagePath;
 const listFileName = 'list.json';
 
 const createTrackMeta = (userId, trackId) => {

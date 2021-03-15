@@ -1,4 +1,4 @@
-const getUniqueId = require('./getUniqueId');
+const getUniqueId = require('@functions/getUniqueId');
 
 const createFileName = (fileName, fileExt = '') => {
     const fileNameParts = fileName.split('.');

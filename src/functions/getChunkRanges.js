@@ -1,4 +1,4 @@
-const getBytesPerSecond = require('../functions/getBytesPerSecond');
+const getBytesPerSecond = require('@functions/getBytesPerSecond');
 
 RANGE_DURATION = 10;
 

@@ -1,7 +1,6 @@
 const fs = require('fs');
-const path = require('path');
 
-const storagePath = path.join(__dirname, `../../storage`);
+const storagePath = require('@config').storagePath;
 const listFileName = 'list.json';
 
 const deleteTrackData = (userId, trackId) => {

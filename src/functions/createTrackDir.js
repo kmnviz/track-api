@@ -1,8 +1,7 @@
 const fs = require('fs');
-const path = require('path');
-const storagePath = path.join(__dirname, `../../storage`);
+const storagePath = require('@config').storagePath;
 
-module.exports = (userId, trackId) => {
+const createTrackDir = (userId, trackId) => {
     const userDirPath = `${storagePath}/${userId}`;
     const trackDirPath = `${userDirPath}/${trackId}`;
 
@@ -15,4 +14,6 @@ module.exports = (userId, trackId) => {
     }
 
     return trackDirPath;
-}
+};
+
+module.exports = createTrackDir;

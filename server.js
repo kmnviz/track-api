@@ -1,15 +1,20 @@
+require('dotenv').config();
+require('module-alias/register');
+
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const port = 3030;
+const port = process.env.PORT;
 
 app.use(cors());
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
+    const trackData = require('@functions/getTrackData')('u-1', 't-21e82e5ea641a0ae');
+
     res.json({ message: 'hello', route: '/' });
 });
 
@@ -18,21 +23,21 @@ app.get('/index', (req, res) => {
 });
 
 app.post('/create/:user_id', (req, res) => {
-    const getUniqueId = require('./src/functions/getUniqueId');
+    const getUniqueId = require('@functions/getUniqueId');
     const userId = `u-${req['params']['user_id']}`;
     const trackId = getUniqueId('t-', 8);
-    const createTrackDir = require('./src/functions/createTrackDir');
+    const createTrackDir = require('@functions/createTrackDir');
     const trackDirPath = createTrackDir(userId, trackId);
-    const storageCreate = require('./src/services/storage').create(trackDirPath);
+    const storageCreate = require('@services/storage').create(trackDirPath);
 
     storageCreate(req, res, (err) => {
         if (!err) {
-            const createTrackData = require('./src/functions/createTrackData');
+            const createTrackData = require('@functions/createTrackData');
             createTrackData(userId, trackId, req['body']);
-            const createTrackMp3 = require('./src/functions/createTrackMp3');
+            const createTrackMp3 = require('@functions/createTrackMp3');
             createTrackMp3(userId, trackId)
                 .then(() => {
-                    const createTrackMeta = require('./src/functions/createTrackMeta');
+                    const createTrackMeta = require('@functions/createTrackMeta');
                     createTrackMeta(userId, trackId);
 
                     res.json({ message: 'done', id: trackId });
@@ -49,13 +54,13 @@ app.post('/create/:user_id', (req, res) => {
 app.post('/update/:user_id/:track_id', (req, res) => {
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
-    const getTrackDirPath = require('./src/functions/getTrackDirPath');
+    const getTrackDirPath = require('@functions/getTrackDirPath');
     const trackDirPath = getTrackDirPath(userId, trackId);
-    const storageUpdate = require('./src/services/storage').update(trackDirPath);
+    const storageUpdate = require('@services/storage').update(trackDirPath);
 
     storageUpdate(req, res, (err) => {
         if (!err) {
-            const updateTrackData = require('./src/functions/updateTrackData');
+            const updateTrackData = require('@functions/updateTrackData');
             const updatedData = req.files && req.files.image.length > 0
                 ? Object.assign(req['body'], { image: req.files.image[0].filename })
                 : req['body'];
@@ -72,8 +77,8 @@ app.post('/update/:user_id/:track_id', (req, res) => {
 app.post('/delete/:user_id/:track_id', (req, res) => {
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
-    const deleteTrackDir = require('./src/functions/deleteTrackDir');
-    const deleteTrackData = require('./src/functions/deleteTrackData');
+    const deleteTrackDir = require('@functions/deleteTrackDir');
+    const deleteTrackData = require('@functions/deleteTrackData');
 
     deleteTrackDir(userId, trackId);
     deleteTrackData(userId, trackId);
@@ -84,11 +89,11 @@ app.post('/delete/:user_id/:track_id', (req, res) => {
 app.get('/read/:user_id/:track_id?', (req, res) => {
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
-    const getUserData = require('./src/functions/getUserData');
-    const getTrackData = require('./src/functions/getTrackData');
+    const getUserData = require('@functions/getUserData');
+    const getTrackData = require('@functions/getTrackData');
     const data = req['params']['track_id'] ? getTrackData(userId, trackId) : getUserData(userId);
     if (req['params']['track_id']) {
-        data['meta']['chunks'] = require('./src/functions/getChunkRanges')(data['meta']['duration'], data['meta']['size']).length;
+        data['meta']['chunks'] = require('@functions/getChunkRanges')(data['meta']['duration'], data['meta']['size']).length;
     }
 
     res.json({ message: 'done', id: req['params']['track_id'] ? trackId : req['params']['user_id'], data: data });
@@ -97,7 +102,7 @@ app.get('/read/:user_id/:track_id?', (req, res) => {
 app.get('/download/:user_id/:track_id', (req, res) => {
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
-    const getTrackFilePath = require('./src/functions/getTrackFilePath');
+    const getTrackFilePath = require('@functions/getTrackFilePath');
 
     try {
         const trackFilePath = getTrackFilePath(userId, trackId, 'private');
@@ -110,8 +115,8 @@ app.get('/download/:user_id/:track_id', (req, res) => {
 app.get('/content/:user_id/:track_id', (req, res) => {
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
-    const getTrackFilePath = require('./src/functions/getTrackFilePath');
-    const getTrackData = require('./src/functions/getTrackData');
+    const getTrackFilePath = require('@functions/getTrackFilePath');
+    const getTrackData = require('@functions/getTrackData');
     const trackData = getTrackData(userId, trackId);
 
     try {
@@ -135,14 +140,14 @@ app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
     const second = `${req['params']['second']}`;
-    const trackFilePath = require('./src/functions/getTrackFilePath')(userId, trackId, 'public');
-    const trackData = require('./src/functions/getTrackData')(userId, trackId);
-    const chunk = require('./src/functions/getChunk')(second, trackData['meta']);
+    const trackFilePath = require('@functions/getTrackFilePath')(userId, trackId, 'public');
+    const trackData = require('@functions/getTrackData')(userId, trackId);
+    const chunk = require('@functions/getChunk')(second, trackData['meta']);
 
     if (Object.keys(chunk['ranges']).length > 0) {
         const bytesStart = parseInt(chunk['ranges']['bytes'].split('/')[0]);
         const bytesEnd = parseInt(chunk['ranges']['bytes'].split('/')[1]);
-        const content = require('./src/functions/getFileContent')(trackFilePath, bytesStart, bytesEnd);
+        const content = require('@functions/getFileContent')(trackFilePath, bytesStart, bytesEnd);
         const headers = {
             'Content-Type': 'audio/mpeg',
             'Content-Length': `${bytesEnd - bytesStart}`

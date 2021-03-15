@@ -1,9 +1,8 @@
 const fs = require('fs');
-const path = require('path');
-const ffmpeg = require('../services/ffmpeg');
-const getUniqueId = require('./getUniqueId');
+const ffmpeg = require('@services/ffmpeg');
+const getUniqueId = require('@functions/getUniqueId');
 
-const storagePath = path.join(__dirname, `../../storage`);
+const storagePath = require('@config').storagePath;
 const listFileName = 'list.json';
 
 const createTrackMp3 = (userId, trackId) => {

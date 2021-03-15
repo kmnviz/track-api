@@ -1,5 +1,5 @@
-const getChunkRanges = require('./getChunkRanges');
-const extractChunkRanges = require('./extractChunkRanges');
+const getChunkRanges = require('@functions/getChunkRanges');
+const extractChunkRanges = require('@functions/extractChunkRanges');
 
 const getChunk = (second, fileMeta) => {
     const chunk = {};

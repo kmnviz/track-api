@@ -1,5 +1,5 @@
 const path = require('path');
-const storagePath = path.join(__dirname, `../../storage`);
+const storagePath = require('@config').storagePath;
 
 const getTrackDirPath = (userId, trackId) => {
     const userDirPath = `${storagePath}/${userId}`;

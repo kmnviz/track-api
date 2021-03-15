@@ -1,6 +1,6 @@
 const path = require('path');
 const multer = require('multer');
-const createFileName = require('../functions/createFileName');
+const createFileName = require('@functions/createFileName');
 
 const options = (dirPath) => {
     return {
@@ -27,7 +27,7 @@ const send = (options, fields, allowedExtensions) => {
 
     const diskStorage = multer.diskStorage(options);
     return multer({ storage: diskStorage, fileFilter }).fields(fields);
-}
+};
 
 module.exports = {
     create: (dirPath) => {
@@ -46,4 +46,4 @@ module.exports = {
 
         return send(options(dirPath), fields, ['jpeg', 'jpg', 'png']);
     }
-}
+};
