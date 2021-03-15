@@ -159,5 +159,11 @@ app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
 });
 
 app.listen(port, () => {
+    if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+        if (!fs.existsSync(require('@config').storagePath)) {
+            fs.mkdirSync(require('@config').storagePath);
+        }
+    }
+
     console.log(`Example app listening at http://localhost:${port}`)
 });
