@@ -1,7 +1,9 @@
 const path = require('path');
+const environment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV  ? 'development' : 'production';
+const devStoragePath = path.join(__dirname, `../../storage`);
 
 const config = {
-    storagePath: path.join(__dirname, `../../${process.env.STORAGE_PATH}`)
+    storagePath: environment === 'development' ? devStoragePath : process.env.STORAGE_PATH
 };
 
 module.exports = config;

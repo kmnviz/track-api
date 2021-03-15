@@ -6,15 +6,13 @@ const path = require('path');
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-    const trackData = require('@functions/getTrackData')('u-1', 't-21e82e5ea641a0ae');
-
     res.json({ message: 'hello', route: '/' });
 });
 
