@@ -1,6 +1,6 @@
 RANGE_DURATION = 10;
 
-class Chunk {
+class ranges {
     constructor(fileMeta) {
         this.duration = fileMeta['duration'];
         this.size = fileMeta['size'];
@@ -10,7 +10,7 @@ class Chunk {
         return Math.floor(this.size / this.duration);
     };
 
-    get ranges() {
+    get all() {
         const chunks = [];
         const count = Math.ceil(this.duration / RANGE_DURATION);
         const length = Math.floor(this.bps * RANGE_DURATION);
@@ -41,23 +41,15 @@ class Chunk {
         return chunks;
     };
 
-    extract(second) {
-        for (let i = 0; i < this.ranges.length; i++) {
-            const rangeArr = this.ranges[i]['seconds'].split('-');
+    one(second) {
+        for (let i = 0; i < this.all.length; i++) {
+            const rangeArr = this.all[i]['seconds'].split('-');
             if (second >= parseInt(rangeArr[0]) && second <= parseInt(rangeArr[1])) {
-                return this.ranges[i];
+                return this.all[i];
             }
         }
         return {};
     };
-
-    one(second) {
-        const chunk = {};
-        const chunkRanges = this.ranges;
-        chunk['ranges'] = this.extract(second, chunkRanges);
-
-        return chunk;
-    };
 }
 
-module.exports = Chunk;
+module.exports = ranges;

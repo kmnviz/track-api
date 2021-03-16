@@ -98,8 +98,8 @@ app.get('/read/:user_id/:track_id?', (req, res) => {
     const getTrackData = require('@functions/getTrackData');
     const data = req['params']['track_id'] ? getTrackData(userId, trackId) : getUserData(userId);
     if (req['params']['track_id']) {
-        const Chunk = new (require('@services/chunk'))(data['meta']);
-        data['meta']['chunks'] = Chunk.ranges.length;
+        const ranges = new (require('@services/ranges'))(data['meta']);
+        data['meta']['ranges'] = ranges.all.length;
     }
 
     res.json({ message: 'done', id: req['params']['track_id'] ? trackId : req['params']['user_id'], data: data });
@@ -142,18 +142,18 @@ app.get('/content/:user_id/:track_id', (req, res) => {
     }
 });
 
-app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
+app.get('/range/:user_id/:track_id/:second', (req, res) => {
     const userId = `u-${req['params']['user_id']}`;
     const trackId = `${req['params']['track_id']}`;
     const second = `${req['params']['second']}`;
     const trackFilePath = require('@functions/getTrackFilePath')(userId, trackId, 'public');
     const trackData = require('@functions/getTrackData')(userId, trackId);
-    const Chunk = new (require('@services/chunk'))(trackData['meta']);
-    const oneChunk = Chunk.one(second);
+    const ranges = new (require('@services/ranges'))(trackData['meta']);
+    const range = ranges.one(second);
 
-    if (Object.keys(oneChunk['ranges']).length > 0) {
-        const bytesStart = parseInt(oneChunk['ranges']['bytes'].split('/')[0]);
-        const bytesEnd = parseInt(oneChunk['ranges']['bytes'].split('/')[1]);
+    if (Object.keys(range).length > 0) {
+        const bytesStart = parseInt(range['bytes'].split('/')[0]);
+        const bytesEnd = parseInt(range['bytes'].split('/')[1]);
         const content = require('@functions/getFileContent')(trackFilePath, bytesStart, bytesEnd);
         const headers = {
             'Content-Type': 'audio/mpeg',
@@ -163,7 +163,7 @@ app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
         res.writeHead(200, headers).write(content);
         res.end();
     } else {
-        res.status(404).json({ message: 'not found', route: '/chunk' });
+        res.status(404).json({ message: 'not found', route: '/range' });
     }
 });
 
