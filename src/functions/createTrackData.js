@@ -9,7 +9,7 @@ const createTrackData = (userId, trackId, payload) => {
     const userDirPath = `${storagePath}/${userId}`;
     const trackDirPath = `${userDirPath}/${trackId}`;
     const listFilePath = `${userDirPath}/${listFileName}`;
-    const trackObject = require('@templates/track')();
+    const trackObject = require('@templates/track');
 
     Object.keys(payload).forEach((key) => {
         trackObject[key] = payload[key];

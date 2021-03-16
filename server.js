@@ -20,8 +20,15 @@ app.get('/index', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.post('/test', (req, res) => {
+    const name = req['query']['name'];
+    const bucket = require('@services/google/bucket')(name);
+    bucket.create();
+    res.json({ message: 'hello', route: '/test' });
+});
+
 app.post('/create/:user_id', (req, res) => {
-    const getUniqueId = require('@functions/getUniqueId');
+    const getUniqueId = require('@helpers/getUniqueId');
     const userId = `u-${req['params']['user_id']}`;
     const trackId = getUniqueId('t-', 8);
     const createTrackDir = require('@functions/createTrackDir');
@@ -91,7 +98,8 @@ app.get('/read/:user_id/:track_id?', (req, res) => {
     const getTrackData = require('@functions/getTrackData');
     const data = req['params']['track_id'] ? getTrackData(userId, trackId) : getUserData(userId);
     if (req['params']['track_id']) {
-        data['meta']['chunks'] = require('@functions/getChunkRanges')(data['meta']['duration'], data['meta']['size']).length;
+        const Chunk = new (require('@services/chunk'))(data['meta']);
+        data['meta']['chunks'] = Chunk.ranges.length;
     }
 
     res.json({ message: 'done', id: req['params']['track_id'] ? trackId : req['params']['user_id'], data: data });
@@ -140,11 +148,12 @@ app.get('/chunk/:user_id/:track_id/:second', (req, res) => {
     const second = `${req['params']['second']}`;
     const trackFilePath = require('@functions/getTrackFilePath')(userId, trackId, 'public');
     const trackData = require('@functions/getTrackData')(userId, trackId);
-    const chunk = require('@functions/getChunk')(second, trackData['meta']);
+    const Chunk = new (require('@services/chunk'))(trackData['meta']);
+    const oneChunk = Chunk.one(second);
 
-    if (Object.keys(chunk['ranges']).length > 0) {
-        const bytesStart = parseInt(chunk['ranges']['bytes'].split('/')[0]);
-        const bytesEnd = parseInt(chunk['ranges']['bytes'].split('/')[1]);
+    if (Object.keys(oneChunk['ranges']).length > 0) {
+        const bytesStart = parseInt(oneChunk['ranges']['bytes'].split('/')[0]);
+        const bytesEnd = parseInt(oneChunk['ranges']['bytes'].split('/')[1]);
         const content = require('@functions/getFileContent')(trackFilePath, bytesStart, bytesEnd);
         const headers = {
             'Content-Type': 'audio/mpeg',

@@ -1,17 +1,17 @@
-module.exports = () => {
-    return {
-        "name": "",
-        "artist_name": "",
-        "label_name": "",
-        "released_date": "",
-        "genres": "",
-        "additional_info": "",
-        "image": "",
-        "public": "",
-        "private": "",
-        "meta": {
-            "duration": "",
-            "size": ""
-        }
+const track = {
+    "name": "",
+    "artist_name": "",
+    "label_name": "",
+    "released_date": "",
+    "genres": "",
+    "additional_info": "",
+    "image": "",
+    "public": "",
+    "private": "",
+    "meta": {
+        "duration": "",
+        "size": ""
     }
 };
+
+module.exports = track;

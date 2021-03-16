@@ -10,6 +10,7 @@
   "_moduleAliases": {
     "@config": "src/config",
     "@functions": "src/functions",
+    "@helpers": "src/helpers",
     "@services": "src/services",
     "@templates": "src/templates"
   },
@@ -17,6 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.0.20",
+    "@google-cloud/storage": "^5.8.1",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

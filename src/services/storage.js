@@ -1,6 +1,6 @@
 const path = require('path');
 const multer = require('multer');
-const createFileName = require('@functions/createFileName');
+const createFileName = require('@helpers/createFileName');
 
 const options = (dirPath) => {
     return {

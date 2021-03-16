@@ -1,6 +1,6 @@
 const fs = require('fs');
 const ffmpeg = require('@services/ffmpeg');
-const getUniqueId = require('@functions/getUniqueId');
+const getUniqueId = require('@helpers/getUniqueId');
 
 const storagePath = require('@config').storagePath;
 const listFileName = 'list.json';
